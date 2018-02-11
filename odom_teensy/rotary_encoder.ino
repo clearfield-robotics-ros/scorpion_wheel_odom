@@ -15,7 +15,7 @@ long printing_angle = 0;
 long angle_mask = 262080; // 0x111111111111000000: mask to obtain first 12 digits with position info
 int debug;
 
-const float diam = 100.5;
+const float diam = 101.6; //4 inch wheels
 float true_rad;
 int cnt = 0;
 float prev_rad;
@@ -81,7 +81,7 @@ float rotary_data()
 
   Serial.println(cnt);
 
-  true_dist = diam*(cnt*3.1415 + true_rad/(2));
+  true_dist = - diam*(cnt*3.1415 + true_rad/(2));  //negative in front for the wheel rolling direction relative to scorpion
    
   prev_rad = true_rad;
   
