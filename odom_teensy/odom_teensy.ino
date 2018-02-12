@@ -33,32 +33,49 @@ int parse = 0;
 ros::NodeHandle nh;
 nav_msgs::Odometry odom_msg;
 ros::Publisher odomPub("scorpion/odom", &odom_msg);
+
 char frame_id[] = "odom";
 char child_frame_id[] = "base_link";
 int seqVal = 0;
 int ODOM_DELAY_MS = 20;
+long dt_micros = 0;
+long past_micros = 0;
+float past_dist = 0;
+float dist = 0;
+float vx = 0;
 
 void setup() {
   Serial.begin(9600);
   setup_rotary_encoder();
   calibrate_rotary_encoder();
+  past_micros = micros();
+
+//  nh.getHardware()->setBaud(115200);
+//  nh.initNode();
+//  nh.advertise(odomPub);
 }
 
 void loop(){
-  delay(200);
+  //delay(200);
 //  if(Serial.available()>0)
 //  {  
 //    parse = Serial.parseInt();
 //    if(parse == 0){calibrate_rotary_encoder();}
 //    if(parse == 1){rotary_data();}
 //  }
-  float answer = rotary_data();
-  Serial.println(answer);
+  float dist = rotary_data();   //check units
+  Serial.println(dist);
 
-  readyOdomMsg();
-  odomPub.publish(&odom_msg);
-  nh.spinOnce();
-  delay(ODOM_DELAY_MS);
+  dt_micros = micros() - past_micros;
+  vx = (dist - past_dist) * 1000000 / dt_micros;   //goes to same unit of distance/s
+
+  past_dist = dist;
+  past_micros = micros();
+
+  //readyOdomMsg();
+  //odomPub.publish(&odom_msg);
+  //nh.spinOnce();
+  //delay(ODOM_DELAY_MS);
 }
 
 void readyOdomMsg(){
@@ -82,7 +99,7 @@ void readyOdomMsg(){
   odom_msg.pose.covariance[28]      = 0.001;  //0.0,    0.0,    0.0,    0.0,    0.001,  0.0,
   odom_msg.pose.covariance[35]      = 0.03;   //0.0,    0.0,    0.0,    0.0,    0.0,    0.03
 
-  odom_msg.twist.twist.linear.x     = 0.0;  //change this
+  odom_msg.twist.twist.linear.x     = vx;  //change this
   odom_msg.twist.twist.linear.y     = 0.0;
   odom_msg.twist.twist.linear.z     = 0.0;       
   odom_msg.twist.twist.angular.x    = 0.0;   
