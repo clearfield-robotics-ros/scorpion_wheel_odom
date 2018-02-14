@@ -45,14 +45,14 @@ float dist = 0;
 float vx = 0;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   setup_rotary_encoder();
   calibrate_rotary_encoder();
   past_micros = micros();
 
-//  nh.getHardware()->setBaud(115200);
-//  nh.initNode();
-//  nh.advertise(odomPub);
+  nh.getHardware()->setBaud(115200);
+  nh.initNode();
+  nh.advertise(odomPub);
 }
 
 void loop(){
@@ -64,18 +64,22 @@ void loop(){
 //    if(parse == 1){rotary_data();}
 //  }
   float dist = rotary_data();   //check units
-  Serial.println(dist);
 
   dt_micros = micros() - past_micros;
-  vx = (dist - past_dist) * 1000000 / dt_micros;   //goes to same unit of distance/s
+  vx = (dist - past_dist) * 1000 / dt_micros;   //mm/s
 
   past_dist = dist;
   past_micros = micros();
 
-  //readyOdomMsg();
-  //odomPub.publish(&odom_msg);
-  //nh.spinOnce();
-  //delay(ODOM_DELAY_MS);
+//  Serial.print(dist);
+//  Serial.print("\t");
+//  Serial.println(vx);
+//  delay(20);
+
+  readyOdomMsg();
+  odomPub.publish(&odom_msg);
+  nh.spinOnce();
+  delay(ODOM_DELAY_MS);
 }
 
 void readyOdomMsg(){
